@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { DashboardIcon, ShoppingCartIcon, KeyIcon, WalletIcon, UserIcon, MenuIcon, CloseIcon, CopyIcon, FilterIcon, WrenchIcon, ChevronDownIcon, LockIcon, LogoutIcon, HistoryIcon } from './Icons';
 
 const API_URL = '/api';
 
@@ -100,20 +101,19 @@ function UserDashboard({ user, token, onLogout }) {
 
   return (
     <div className="user-panel">
-      {/* Header */}
       <div className="panel-header">
         <div className="header-left">
           <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
-            ☰
+            <MenuIcon size={24} />
           </button>
           <div className="panel-logo">
-            <span className="logo-icon">🔧</span>
+            <span className="logo-icon"><WrenchIcon size={24} /></span>
             <h1 className="panel-title">MULTIHACK PANEL</h1>
           </div>
         </div>
         <div className="user-dropdown">
           <button className="user-menu-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}>
-            👤 {user.username.toUpperCase()} ▼
+            <UserIcon size={20} /> {user.username.toUpperCase()} <ChevronDownIcon size={16} />
           </button>
           {dropdownOpen && (
             <>
@@ -124,7 +124,7 @@ function UserDashboard({ user, token, onLogout }) {
                   <div className="dropdown-role">Reseller</div>
                 </div>
                 <div className="dropdown-balance">
-                  <span>💰</span>
+                  <WalletIcon size={20} />
                   <div>
                     <div style={{fontSize: '12px', opacity: 0.8}}>Wallet Balance</div>
                     <div className="balance-amount">₹{balance.toFixed(2)}</div>
@@ -133,16 +133,16 @@ function UserDashboard({ user, token, onLogout }) {
                 <div className="dropdown-section">
                   <div className="section-title">Wallet</div>
                   <div className="dropdown-item" onClick={() => { setCurrentPage('wallet'); setDropdownOpen(false); }}>
-                    🔄 Wallet History
+                    <HistoryIcon size={16} /> Wallet History
                   </div>
                 </div>
                 <div className="dropdown-section">
                   <div className="section-title">Account</div>
                   <div className="dropdown-item" onClick={() => alert('Change password feature coming soon!')}>
-                    🔑 Change Password
+                    <LockIcon size={16} /> Change Password
                   </div>
                   <div className="dropdown-item" onClick={onLogout}>
-                    🚪 Logout
+                    <LogoutIcon size={16} /> Logout
                   </div>
                 </div>
               </div>
@@ -151,42 +151,43 @@ function UserDashboard({ user, token, onLogout }) {
         </div>
       </div>
 
-      {/* Sidebar */}
       {sidebarOpen && (
         <>
           <div className="overlay" onClick={() => setSidebarOpen(false)}></div>
           <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
               <h2 className="panel-title">Menu</h2>
-              <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>×</button>
+              <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
+                <CloseIcon size={24} />
+              </button>
             </div>
             <div className="sidebar-nav">
               <div 
                 className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
                 onClick={() => { setCurrentPage('dashboard'); setSidebarOpen(false); }}
               >
-                <span className="nav-icon">📊</span>
+                <span className="nav-icon"><DashboardIcon size={20} /></span>
                 Dashboard
               </div>
               <div 
                 className={`nav-item ${currentPage === 'buy' ? 'active' : ''}`}
                 onClick={() => { setCurrentPage('buy'); setSidebarOpen(false); }}
               >
-                <span className="nav-icon">🛒</span>
+                <span className="nav-icon"><ShoppingCartIcon size={20} /></span>
                 Buy Key
               </div>
               <div 
                 className={`nav-item ${currentPage === 'keys' ? 'active' : ''}`}
                 onClick={() => { setCurrentPage('keys'); setSidebarOpen(false); }}
               >
-                <span className="nav-icon">🔑</span>
+                <span className="nav-icon"><KeyIcon size={20} /></span>
                 My Keys
               </div>
               <div 
                 className={`nav-item ${currentPage === 'wallet' ? 'active' : ''}`}
                 onClick={() => { setCurrentPage('wallet'); setSidebarOpen(false); }}
               >
-                <span className="nav-icon">💰</span>
+                <span className="nav-icon"><WalletIcon size={20} /></span>
                 Wallet History
               </div>
             </div>
@@ -194,7 +195,6 @@ function UserDashboard({ user, token, onLogout }) {
         </>
       )}
 
-      {/* Main Content */}
       <div className="panel-content">
         {currentPage === 'dashboard' && (
           <div>
@@ -352,7 +352,7 @@ function UserDashboard({ user, token, onLogout }) {
                         <div className="key-code">
                           <span>{purchase.key_value}</span>
                           <button className="copy-btn" onClick={() => copyToClipboard(purchase.key_value)}>
-                            📋
+                            <CopyIcon size={14} />
                           </button>
                         </div>
                       </div>
@@ -377,8 +377,8 @@ function UserDashboard({ user, token, onLogout }) {
           <div>
             <h2 className="page-title">Wallet History</h2>
             
-            <button className="btn btn-blue" style={{marginBottom: '24px', width: '100%'}}>
-              🔽 Filter Transactions
+            <button className="btn btn-blue" style={{marginBottom: '24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+              <FilterIcon size={16} /> Filter Transactions
             </button>
 
             <div className="stats-grid">

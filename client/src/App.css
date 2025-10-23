@@ -251,6 +251,11 @@ body {
   border-left: 3px solid transparent;
 }
 
+a.nav-item {
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
 .nav-item:hover {
   background: #334155;
   color: #0ea5e9;
@@ -877,4 +882,261 @@ body {
   border: 2px solid #e0e0e0;
   border-radius: 6px;
   margin-bottom: 10px;
+}
+
+/* Admin Panel Styles (Dark Theme) */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #334155;
+}
+
+.admin-table td {
+  padding: 16px;
+  color: #e2e8f0;
+  border-bottom: 1px solid #334155;
+  font-size: 14px;
+}
+
+.admin-table tr:hover {
+  background: #334155;
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.status-badge.status-active {
+  background: #065f46;
+  color: #6ee7b7;
+}
+
+.status-badge.status-blocked {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.status-badge.status-used {
+  background: #78350f;
+  color: #fbbf24;
+}
+
+.status-badge.status-available {
+  background: #065f46;
+  color: #6ee7b7;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.btn-small.btn-info {
+  background: #0ea5e9;
+  color: white;
+}
+
+.btn-small.btn-info:hover {
+  background: #0284c7;
+}
+
+.btn-small.btn-success {
+  background: #16a34a;
+  color: white;
+}
+
+.btn-small.btn-success:hover {
+  background: #15803d;
+}
+
+.btn-small.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-small.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.admin-modal {
+  background: #1e293b;
+  color: #e2e8f0;
+  max-width: 900px;
+  max-height: 85vh;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: #b91c1c;
+  transform: scale(1.1);
+}
+
+/* Responsive Table */
+@media (max-width: 1024px) {
+  .table-container {
+    margin: 0 -24px;
+    width: calc(100% + 48px);
+  }
+
+  .admin-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    margin: 0 -24px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .btn-small {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+  }
+
+  .logo-icon {
+    display: none;
+  }
+}
+
+/* Touch-friendly button spacing on mobile */
+@media (max-width: 640px) {
+  .btn-small {
+    margin-bottom: 4px;
+  }
+
+  .admin-table td > div {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+  .panel-header {
+    padding: 8px 12px;
+  }
+
+  .sidebar {
+    width: 240px;
+  }
+}
+
+/* Tablet optimization */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .panel-content {
+    padding: 24px;
+  }
+}
+
+/* Desktop large screens */
+@media (min-width: 1440px) {
+  .panel-content {
+    max-width: 1400px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 18px 20px;
+  }
+}
+
+/* High DPI displays (Retina, MacBook) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .admin-table,
+  .card,
+  .btn {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Print styles */
+@media print {
+  .panel-header,
+  .sidebar,
+  .overlay,
+  .btn,
+  .menu-toggle,
+  .user-dropdown {
+    display: none !important;
+  }
+
+  .panel-content {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .card {
+    break-inside: avoid;
+  }
 }
