@@ -141,6 +141,7 @@ if (hasPriceColumn && !variantTableExists) {
   const insertPurchase = db.prepare('INSERT INTO purchases (user_id, variant_id, key_id, amount, purchased_at) VALUES (?, ?, ?, ?, ?)');
   
   const productVariantMap = {}; // Map old product_id to new variant_id
+  const keyIdMap = {}; // Map old key_id to new key_id
   
   for (const product of oldProducts) {
     insertProduct.run(product.id, product.name, product.description, product.created_at);
@@ -154,19 +155,21 @@ if (hasPriceColumn && !variantTableExists) {
     productVariantMap[product.id] = variantResult.lastInsertRowid;
   }
   
-  // Migrate keys
+  // Migrate keys and track ID mapping
   for (const key of oldKeys) {
     const variantId = productVariantMap[key.product_id];
     if (variantId) {
-      insertKey.run(variantId, key.key_value, key.is_used, key.used_by, key.used_at);
+      const keyResult = insertKey.run(variantId, key.key_value, key.is_used, key.used_by, key.used_at);
+      keyIdMap[key.id] = keyResult.lastInsertRowid; // Map old key ID to new key ID
     }
   }
   
-  // Migrate purchases
+  // Migrate purchases using the mapped key IDs
   for (const purchase of oldPurchases) {
     const variantId = productVariantMap[purchase.product_id];
-    if (variantId) {
-      insertPurchase.run(purchase.user_id, variantId, purchase.key_id, purchase.amount, purchase.purchased_at);
+    const newKeyId = keyIdMap[purchase.key_id];
+    if (variantId && newKeyId) {
+      insertPurchase.run(purchase.user_id, variantId, newKeyId, purchase.amount, purchase.purchased_at);
     }
   }
   
