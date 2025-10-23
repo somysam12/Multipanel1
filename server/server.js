@@ -151,9 +151,12 @@ app.get('/api/admin/users/search/:username', authenticateToken, requireAdmin, (r
 
 app.get('/api/admin/users/:id/purchases', authenticateToken, requireAdmin, (req, res) => {
   const purchases = db.prepare(`
-    SELECT p.*, pr.name as product_name, pk.key_value 
+    SELECT p.*, pr.name as product_name, 
+           pv.duration_value, pv.duration_unit, pv.price,
+           pk.key_value 
     FROM purchases p
-    JOIN products pr ON p.product_id = pr.id
+    JOIN product_variants pv ON p.variant_id = pv.id
+    JOIN products pr ON pv.product_id = pr.id
     JOIN product_keys pk ON p.key_id = pk.id
     WHERE p.user_id = ?
     ORDER BY p.purchased_at DESC
@@ -163,19 +166,38 @@ app.get('/api/admin/users/:id/purchases', authenticateToken, requireAdmin, (req,
 
 app.get('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
   const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC').all();
-  const productsWithKeys = products.map(product => {
-    const keyCount = db.prepare('SELECT COUNT(*) as count FROM product_keys WHERE product_id = ? AND is_used = 0').get(product.id);
-    return { ...product, availableKeys: keyCount.count };
+  const productsWithVariants = products.map(product => {
+    const variants = db.prepare(`
+      SELECT v.*, 
+             (SELECT COUNT(*) FROM product_keys WHERE variant_id = v.id AND is_used = 0) as available_keys,
+             (SELECT COUNT(*) FROM product_keys WHERE variant_id = v.id) as total_keys
+      FROM product_variants v 
+      WHERE v.product_id = ? 
+      ORDER BY v.duration_value
+    `).all(product.id);
+    return { ...product, variants };
   });
-  res.json(productsWithKeys);
+  res.json(productsWithVariants);
 });
 
 app.post('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
-  const { name, description, price, duration } = req.body;
+  const { name, description, variants } = req.body;
   
+  if (!variants || variants.length === 0) {
+    return res.status(400).json({ error: 'At least one variant is required' });
+  }
+
   try {
-    db.prepare('INSERT INTO products (name, description, price, duration) VALUES (?, ?, ?, ?)')
-      .run(name, description, price, duration);
+    const result = db.prepare('INSERT INTO products (name, description) VALUES (?, ?)')
+      .run(name, description);
+    
+    const productId = result.lastInsertRowid;
+    const variantStmt = db.prepare('INSERT INTO product_variants (product_id, duration_value, duration_unit, price) VALUES (?, ?, ?, ?)');
+    
+    variants.forEach(variant => {
+      variantStmt.run(productId, variant.duration_value, variant.duration_unit, variant.price);
+    });
+    
     res.json({ message: 'Product created successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create product' });
@@ -184,7 +206,6 @@ app.post('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
 
 app.delete('/api/admin/products/:id', authenticateToken, requireAdmin, (req, res) => {
   try {
-    db.prepare('DELETE FROM product_keys WHERE product_id = ?').run(req.params.id);
     db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
     res.json({ message: 'Product deleted' });
   } catch (error) {
@@ -192,16 +213,16 @@ app.delete('/api/admin/products/:id', authenticateToken, requireAdmin, (req, res
   }
 });
 
-app.get('/api/admin/products/:id/keys', authenticateToken, requireAdmin, (req, res) => {
-  const keys = db.prepare('SELECT * FROM product_keys WHERE product_id = ? ORDER BY is_used, id DESC').all(req.params.id);
+app.get('/api/admin/variants/:id/keys', authenticateToken, requireAdmin, (req, res) => {
+  const keys = db.prepare('SELECT * FROM product_keys WHERE variant_id = ? ORDER BY is_used, id DESC').all(req.params.id);
   res.json(keys);
 });
 
-app.post('/api/admin/products/:id/keys', authenticateToken, requireAdmin, (req, res) => {
+app.post('/api/admin/variants/:id/keys', authenticateToken, requireAdmin, (req, res) => {
   const { keys } = req.body;
   
   try {
-    const stmt = db.prepare('INSERT INTO product_keys (product_id, key_value) VALUES (?, ?)');
+    const stmt = db.prepare('INSERT INTO product_keys (variant_id, key_value) VALUES (?, ?)');
     keys.forEach(key => {
       stmt.run(req.params.id, key);
     });
@@ -211,7 +232,7 @@ app.post('/api/admin/products/:id/keys', authenticateToken, requireAdmin, (req, 
   }
 });
 
-app.delete('/api/admin/products/:productId/keys/:keyId', authenticateToken, requireAdmin, (req, res) => {
+app.delete('/api/admin/variants/:variantId/keys/:keyId', authenticateToken, requireAdmin, (req, res) => {
   try {
     db.prepare('DELETE FROM product_keys WHERE id = ?').run(req.params.keyId);
     res.json({ message: 'Key deleted' });
@@ -220,9 +241,9 @@ app.delete('/api/admin/products/:productId/keys/:keyId', authenticateToken, requ
   }
 });
 
-app.delete('/api/admin/products/:productId/keys', authenticateToken, requireAdmin, (req, res) => {
+app.delete('/api/admin/variants/:variantId/keys', authenticateToken, requireAdmin, (req, res) => {
   try {
-    db.prepare('DELETE FROM product_keys WHERE product_id = ?').run(req.params.productId);
+    db.prepare('DELETE FROM product_keys WHERE variant_id = ?').run(req.params.variantId);
     res.json({ message: 'All keys deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete keys' });
@@ -254,45 +275,57 @@ app.post('/api/admin/referrals', authenticateToken, requireAdmin, (req, res) => 
 
 app.get('/api/products', authenticateToken, (req, res) => {
   const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC').all();
-  const productsWithAvailability = products.map(product => {
-    const keyCount = db.prepare('SELECT COUNT(*) as count FROM product_keys WHERE product_id = ? AND is_used = 0').get(product.id);
-    return { ...product, available: keyCount.count > 0 };
+  const productsWithVariants = products.map(product => {
+    const variants = db.prepare(`
+      SELECT v.*, 
+             (SELECT COUNT(*) FROM product_keys WHERE variant_id = v.id AND is_used = 0) as available_keys
+      FROM product_variants v 
+      WHERE v.product_id = ? 
+      ORDER BY v.duration_value
+    `).all(product.id);
+    const hasAvailableKeys = variants.some(v => v.available_keys > 0);
+    return { ...product, variants, available: hasAvailableKeys };
   });
-  res.json(productsWithAvailability);
+  res.json(productsWithVariants);
 });
 
-app.post('/api/purchase/:productId', authenticateToken, (req, res) => {
+app.post('/api/purchase/:variantId', authenticateToken, (req, res) => {
   const userId = req.user.id;
-  const productId = req.params.productId;
+  const variantId = req.params.variantId;
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(productId);
+  const variant = db.prepare(`
+    SELECT v.*, p.name as product_name 
+    FROM product_variants v 
+    JOIN products p ON v.product_id = p.id 
+    WHERE v.id = ?
+  `).get(variantId);
   
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
+  if (!variant) {
+    return res.status(404).json({ error: 'Product variant not found' });
   }
 
-  if (user.balance < product.price) {
+  if (user.balance < variant.price) {
     return res.status(400).json({ error: 'Insufficient balance' });
   }
 
-  const availableKey = db.prepare('SELECT * FROM product_keys WHERE product_id = ? AND is_used = 0 LIMIT 1').get(productId);
+  const availableKey = db.prepare('SELECT * FROM product_keys WHERE variant_id = ? AND is_used = 0 LIMIT 1').get(variantId);
   
   if (!availableKey) {
     return res.status(400).json({ error: 'Product out of stock' });
   }
 
   try {
-    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(product.price, userId);
+    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(variant.price, userId);
     db.prepare('UPDATE product_keys SET is_used = 1, used_by = ?, used_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(userId, availableKey.id);
-    db.prepare('INSERT INTO purchases (user_id, product_id, key_id, amount) VALUES (?, ?, ?, ?)')
-      .run(userId, productId, availableKey.id, product.price);
+    db.prepare('INSERT INTO purchases (user_id, variant_id, key_id, amount) VALUES (?, ?, ?, ?)')
+      .run(userId, variantId, availableKey.id, variant.price);
 
     res.json({ 
       message: 'Purchase successful', 
       key: availableKey.key_value,
-      newBalance: user.balance - product.price
+      newBalance: user.balance - variant.price
     });
   } catch (error) {
     res.status(500).json({ error: 'Purchase failed' });
@@ -301,9 +334,13 @@ app.post('/api/purchase/:productId', authenticateToken, (req, res) => {
 
 app.get('/api/user/purchases', authenticateToken, (req, res) => {
   const purchases = db.prepare(`
-    SELECT p.*, pr.name as product_name, pr.duration, pk.key_value 
+    SELECT p.*, 
+           pr.name as product_name, 
+           pv.duration_value, pv.duration_unit,
+           pk.key_value 
     FROM purchases p
-    JOIN products pr ON p.product_id = pr.id
+    JOIN product_variants pv ON p.variant_id = pv.id
+    JOIN products pr ON pv.product_id = pr.id
     JOIN product_keys pk ON p.key_id = pk.id
     WHERE p.user_id = ?
     ORDER BY p.purchased_at DESC
