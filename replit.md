@@ -7,16 +7,16 @@ A complete web application for managing digital product sales with an admin pane
 
 ### Admin Panel
 - **User Management**: Create users, manage balances, block/unblock accounts, search by username
-- **Product Management**: Add products with duration and pricing, manage product inventory
-- **Key Management**: Add/delete product keys (individual or bulk), track key usage
+- **Product Management**: Add products with multiple duration variants (e.g., 1 month, 3 months, 6 months), each with different prices
+- **Key Management**: Add/delete product keys per variant (individual or bulk), track key usage, manage keys for specific duration variants
 - **Referral System**: Generate referral codes with preset balances
 - **Purchase Tracking**: View all user purchases and transaction history
 
 ### User Dashboard
 - **Account System**: Register only with referral codes (no public signup)
-- **Product Browsing**: View available products with pricing and duration
-- **Purchase System**: Buy products using account balance
-- **Purchase History**: View all purchased products and their keys
+- **Product Browsing**: View available products with all duration variants and pricing options
+- **Purchase System**: Select specific product variant (duration + price) before purchasing
+- **Purchase History**: View all purchased products with their keys and variant details
 
 ## Default Admin Credentials
 - Username: `admin`
@@ -66,13 +66,13 @@ A complete web application for managing digital product sales with an admin pane
 - `PUT /api/admin/users/:id/block` - Block/unblock user
 - `GET /api/admin/users/search/:username` - Search users
 - `GET /api/admin/users/:id/purchases` - Get user purchases
-- `GET /api/admin/products` - Get all products
-- `POST /api/admin/products` - Create product
-- `DELETE /api/admin/products/:id` - Delete product
-- `GET /api/admin/products/:id/keys` - Get product keys
-- `POST /api/admin/products/:id/keys` - Add keys to product
-- `DELETE /api/admin/products/:productId/keys/:keyId` - Delete specific key
-- `DELETE /api/admin/products/:productId/keys` - Delete all keys
+- `GET /api/admin/products` - Get all products with their variants
+- `POST /api/admin/products` - Create product with multiple variants
+- `DELETE /api/admin/products/:id` - Delete product and all variants
+- `GET /api/admin/variants/:variantId/keys` - Get keys for specific variant
+- `POST /api/admin/variants/:variantId/keys` - Add keys to specific variant
+- `DELETE /api/admin/variants/:variantId/keys/:keyId` - Delete specific key
+- `DELETE /api/admin/variants/:variantId/keys` - Delete all keys for variant
 - `GET /api/admin/referrals` - Get all referrals
 - `POST /api/admin/referrals` - Create referral code
 
@@ -81,12 +81,15 @@ A complete web application for managing digital product sales with an admin pane
 - 2025-10-23: Implemented complete admin panel and user dashboard
 - 2025-10-23: Added referral-based registration system
 - 2025-10-23: Configured Vite for Replit proxy support
+- 2025-10-23: Implemented product variant system with multiple duration/price combinations per product
+- 2025-10-23: Fixed migration to preserve purchase history when upgrading schema
 
 ## Database Schema
 - **users**: User accounts with balance, admin status, and block status
-- **products**: Digital products with pricing and duration
-- **product_keys**: License keys linked to products
-- **purchases**: Transaction records
+- **products**: Digital products (name and description only)
+- **product_variants**: Product variants with duration_value, duration_unit (days/months), and price
+- **product_keys**: License keys linked to specific product variants
+- **purchases**: Transaction records linked to variants and keys
 - **referrals**: Referral codes with preset balances
 
 ## Environment Configuration
