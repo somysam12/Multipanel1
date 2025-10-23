@@ -72,20 +72,17 @@ db.exec(`
 const tableInfo = db.prepare("PRAGMA table_info(products)").all();
 const hasPriceColumn = tableInfo.some(col => col.name === 'price');
 
-if (hasPriceColumn) {
+// Check if variant table exists
+const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='product_variants'").all();
+const variantTableExists = tables.length > 0;
+
+if (hasPriceColumn && !variantTableExists) {
   console.log('Migrating old schema to new variant-based schema...');
   
   // Get all existing products
   const oldProducts = db.prepare('SELECT * FROM products').all();
   const oldKeys = db.prepare('SELECT * FROM product_keys').all();
   const oldPurchases = db.prepare('SELECT * FROM purchases').all();
-  
-  // Create backup tables
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS products_old AS SELECT * FROM products;
-    CREATE TABLE IF NOT EXISTS product_keys_old AS SELECT * FROM product_keys;
-    CREATE TABLE IF NOT EXISTS purchases_old AS SELECT * FROM purchases;
-  `);
   
   // Drop old tables
   db.exec(`

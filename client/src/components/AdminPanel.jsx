@@ -354,8 +354,9 @@ function UsersManager() {
 function ProductsManager() {
   const [products, setProducts] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: 0, duration: '' });
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', variants: [] });
+  const [newVariant, setNewVariant] = useState({ duration_value: '', duration_unit: 'days', price: 0 });
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [keys, setKeys] = useState([]);
   const [newKeys, setNewKeys] = useState('');
 
@@ -376,14 +377,36 @@ function ProductsManager() {
     }
   };
 
+  const addVariantToProduct = () => {
+    if (!newVariant.duration_value || !newVariant.price) {
+      alert('Please fill in duration and price');
+      return;
+    }
+    setNewProduct({
+      ...newProduct,
+      variants: [...newProduct.variants, { ...newVariant }]
+    });
+    setNewVariant({ duration_value: '', duration_unit: 'days', price: 0 });
+  };
+
+  const removeVariant = (index) => {
+    const updatedVariants = newProduct.variants.filter((_, i) => i !== index);
+    setNewProduct({ ...newProduct, variants: updatedVariants });
+  };
+
   const createProduct = async (e) => {
     e.preventDefault();
+    if (newProduct.variants.length === 0) {
+      alert('Please add at least one variant (duration + price)');
+      return;
+    }
     try {
       await axios.post(`${API_URL}/admin/products`, newProduct, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowCreateForm(false);
-      setNewProduct({ name: '', description: '', price: 0, duration: '' });
+      setNewProduct({ name: '', description: '', variants: [] });
+      setNewVariant({ duration_value: '', duration_unit: 'days', price: 0 });
       loadProducts();
     } catch (error) {
       alert('Failed to create product');
@@ -391,7 +414,7 @@ function ProductsManager() {
   };
 
   const deleteProduct = async (productId) => {
-    if (!confirm('Are you sure? This will delete all keys for this product.')) return;
+    if (!confirm('Are you sure? This will delete all variants and keys for this product.')) return;
     try {
       await axios.delete(`${API_URL}/admin/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -402,13 +425,13 @@ function ProductsManager() {
     }
   };
 
-  const loadKeys = async (productId) => {
+  const loadKeys = async (variantId, variant) => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products/${productId}/keys`, {
+      const response = await axios.get(`${API_URL}/admin/variants/${variantId}/keys`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKeys(response.data);
-      setSelectedProduct(productId);
+      setSelectedVariant(variant);
     } catch (error) {
       alert('Failed to load keys');
     }
@@ -420,12 +443,12 @@ function ProductsManager() {
     if (keyArray.length === 0) return;
 
     try {
-      await axios.post(`${API_URL}/admin/products/${selectedProduct}/keys`, 
+      await axios.post(`${API_URL}/admin/variants/${selectedVariant.id}/keys`, 
         { keys: keyArray }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewKeys('');
-      loadKeys(selectedProduct);
+      loadKeys(selectedVariant.id, selectedVariant);
     } catch (error) {
       alert('Failed to add keys');
     }
@@ -433,22 +456,22 @@ function ProductsManager() {
 
   const deleteKey = async (keyId) => {
     try {
-      await axios.delete(`${API_URL}/admin/products/${selectedProduct}/keys/${keyId}`, {
+      await axios.delete(`${API_URL}/admin/variants/${selectedVariant.id}/keys/${keyId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      loadKeys(selectedProduct);
+      loadKeys(selectedVariant.id, selectedVariant);
     } catch (error) {
       alert('Failed to delete key');
     }
   };
 
   const deleteAllKeys = async () => {
-    if (!confirm('Delete all keys for this product?')) return;
+    if (!confirm('Delete all keys for this variant?')) return;
     try {
-      await axios.delete(`${API_URL}/admin/products/${selectedProduct}/keys`, {
+      await axios.delete(`${API_URL}/admin/variants/${selectedVariant.id}/keys`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      loadKeys(selectedProduct);
+      loadKeys(selectedVariant.id, selectedVariant);
     } catch (error) {
       alert('Failed to delete keys');
     }
@@ -484,26 +507,65 @@ function ProductsManager() {
                 style={{width: '100%', padding: '12px 16px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: '#e2e8f0', minHeight: '80px', fontFamily: 'inherit'}}
               />
             </div>
-            <div className="form-group" style={{marginBottom: 0}}>
-              <label>Price</label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={newProduct.price}
-                onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
-                required
-              />
+            
+            <div style={{padding: '16px', background: '#1e293b', borderRadius: '8px', border: '1px solid #334155'}}>
+              <h4 style={{color: '#0ea5e9', marginBottom: '16px', fontSize: '16px'}}>Product Variants (Duration & Price)</h4>
+              
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '12px', alignItems: 'end', marginBottom: '16px'}}>
+                <div className="form-group" style={{marginBottom: 0}}>
+                  <label>Duration</label>
+                  <input
+                    type="number"
+                    placeholder="e.g., 1, 7, 30"
+                    value={newVariant.duration_value}
+                    onChange={(e) => setNewVariant({...newVariant, duration_value: e.target.value})}
+                  />
+                </div>
+                <div className="form-group" style={{marginBottom: 0}}>
+                  <label>Unit</label>
+                  <select
+                    value={newVariant.duration_unit}
+                    onChange={(e) => setNewVariant({...newVariant, duration_unit: e.target.value})}
+                    style={{width: '100%', padding: '12px 16px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: '#e2e8f0'}}
+                  >
+                    <option value="days">Days</option>
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{marginBottom: 0}}>
+                  <label>Price</label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={newVariant.price}
+                    onChange={(e) => setNewVariant({...newVariant, price: parseFloat(e.target.value)})}
+                  />
+                </div>
+                <button type="button" onClick={addVariantToProduct} className="btn btn-blue" style={{padding: '12px 16px'}}>
+                  <PlusIcon size={16} />
+                </button>
+              </div>
+
+              {newProduct.variants.length > 0 && (
+                <div style={{marginTop: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '8px', fontSize: '13px', color: '#94a3b8'}}>Added Variants:</label>
+                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                    {newProduct.variants.map((variant, index) => (
+                      <div key={index} style={{padding: '8px 12px', background: '#0f172a', border: '1px solid #0ea5e9', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <span style={{color: '#e2e8f0', fontSize: '14px'}}>
+                          {variant.duration_value} {variant.duration_unit} - ₹{variant.price}
+                        </span>
+                        <button type="button" onClick={() => removeVariant(index)} style={{background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px'}}>
+                          <CloseIcon size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="form-group" style={{marginBottom: 0}}>
-              <label>Duration</label>
-              <input
-                type="text"
-                placeholder="e.g., 1 month, 1 year"
-                value={newProduct.duration}
-                onChange={(e) => setNewProduct({...newProduct, duration: e.target.value})}
-                required
-              />
-            </div>
+
             <div style={{display: 'flex', gap: '12px'}}>
               <button type="submit" className="btn btn-blue" style={{flex: 1}}>Create Product</button>
               <button type="button" onClick={() => setShowCreateForm(false)} className="btn btn-cancel" style={{flex: 1}}>Cancel</button>
@@ -517,31 +579,51 @@ function ProductsManager() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Product Name</th>
                 <th>Description</th>
-                <th>Price</th>
-                <th>Duration</th>
-                <th>Available Keys</th>
+                <th>Variants</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map(product => (
                 <tr key={product.id}>
-                  <td><div style={{display: 'flex', alignItems: 'center', gap: '8px'}}><PackageIcon size={16} /> {product.name}</div></td>
-                  <td>{product.description}</td>
-                  <td><WalletIcon size={14} style={{display: 'inline', marginRight: '4px'}} />₹{product.price}</td>
-                  <td>{product.duration}</td>
-                  <td><span className="status-badge status-active">{product.availableKeys}</span></td>
                   <td>
-                    <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
-                      <button onClick={() => loadKeys(product.id)} className="btn-small btn-info">
-                        <EditIcon size={14} /> Manage Keys
-                      </button>
-                      <button onClick={() => deleteProduct(product.id)} className="btn-small btn-danger">
-                        <TrashIcon size={14} /> Delete
-                      </button>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <PackageIcon size={16} /> {product.name}
                     </div>
+                  </td>
+                  <td>{product.description}</td>
+                  <td>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                      {product.variants && product.variants.map(variant => (
+                        <div key={variant.id} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', background: '#0f172a', borderRadius: '6px', border: '1px solid #334155'}}>
+                          <div style={{flex: 1}}>
+                            <span style={{color: '#0ea5e9', fontWeight: '500'}}>
+                              {variant.duration_value} {variant.duration_unit}
+                            </span>
+                            <span style={{color: '#64748b', margin: '0 8px'}}>•</span>
+                            <span style={{color: '#e2e8f0'}}>₹{variant.price}</span>
+                            <span style={{color: '#64748b', margin: '0 8px'}}>•</span>
+                            <span className={`status-badge ${variant.available_keys > 0 ? 'status-active' : 'status-blocked'}`} style={{fontSize: '11px'}}>
+                              {variant.available_keys} keys
+                            </span>
+                          </div>
+                          <button 
+                            onClick={() => loadKeys(variant.id, { ...variant, product_name: product.name })} 
+                            className="btn-small btn-info"
+                            style={{padding: '6px 10px', fontSize: '12px'}}
+                          >
+                            <KeyIcon size={12} /> Manage Keys
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <button onClick={() => deleteProduct(product.id)} className="btn-small btn-danger">
+                      <TrashIcon size={14} /> Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -550,13 +632,17 @@ function ProductsManager() {
         </div>
       </div>
 
-      {selectedProduct && (
+      {selectedVariant && (
         <div className="modal">
           <div className="modal-content admin-modal">
-            <button onClick={() => setSelectedProduct(null)} className="modal-close-btn">
+            <button onClick={() => setSelectedVariant(null)} className="modal-close-btn">
               <CloseIcon size={20} />
             </button>
-            <h3 style={{marginBottom: '24px', fontSize: '20px', color: '#e2e8f0'}}>Product Keys Management</h3>
+            <h3 style={{marginBottom: '8px', fontSize: '20px', color: '#e2e8f0'}}>Manage Keys</h3>
+            <div style={{marginBottom: '24px', padding: '12px', background: '#0f172a', borderRadius: '6px', border: '1px solid #0ea5e9'}}>
+              <div style={{color: '#94a3b8', fontSize: '13px'}}>Product: <span style={{color: '#e2e8f0', fontWeight: '500'}}>{selectedVariant.product_name}</span></div>
+              <div style={{color: '#94a3b8', fontSize: '13px', marginTop: '4px'}}>Variant: <span style={{color: '#0ea5e9', fontWeight: '500'}}>{selectedVariant.duration_value} {selectedVariant.duration_unit} - ₹{selectedVariant.price}</span></div>
+            </div>
             
             <form onSubmit={addKeys} style={{marginBottom: '24px'}}>
               <div className="form-group" style={{marginBottom: '12px'}}>
