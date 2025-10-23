@@ -33,9 +33,16 @@ function Register() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h2>Register</h2>
+        <div style={{textAlign: 'center', marginBottom: '30px'}}>
+          <h1 style={{fontSize: '28px', color: '#0ea5e9', marginBottom: '8px'}}>
+            🔧 MULTIHACK PANEL
+          </h1>
+          <p style={{color: '#94a3b8', fontSize: '14px'}}>Create your account</p>
+        </div>
+        
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
+        
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username</label>
@@ -43,6 +50,7 @@ function Register() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="Choose a username"
               required
             />
           </div>
@@ -52,6 +60,7 @@ function Register() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Choose a password"
               required
             />
           </div>
@@ -61,11 +70,16 @@ function Register() {
               type="text"
               value={referralCode}
               onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Enter referral code"
               required
             />
+            <small style={{color: '#94a3b8', fontSize: '12px', marginTop: '8px', display: 'block'}}>
+              You need a referral code to register
+            </small>
           </div>
           <button type="submit" className="btn-primary">Register</button>
         </form>
+        
         <p className="auth-link">
           Already have an account? <Link to="/login">Login</Link>
         </p>

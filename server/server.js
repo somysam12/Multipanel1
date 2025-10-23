@@ -316,6 +316,24 @@ app.get('/api/user/profile', authenticateToken, (req, res) => {
   res.json(user);
 });
 
+app.get('/api/user/wallet-history', authenticateToken, (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  
+  const moneyUsed = db.prepare(`
+    SELECT COALESCE(SUM(amount), 0) as total 
+    FROM purchases 
+    WHERE user_id = ?
+  `).get(req.user.id);
+
+  const moneyAdded = user.balance + moneyUsed.total;
+
+  res.json({
+    moneyAdded: moneyAdded,
+    moneyUsed: moneyUsed.total,
+    netBalance: user.balance
+  });
+});
+
 app.listen(PORT, 'localhost', () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

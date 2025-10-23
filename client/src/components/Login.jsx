@@ -26,8 +26,15 @@ function Login({ onLogin }) {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h2>Login</h2>
+        <div style={{textAlign: 'center', marginBottom: '30px'}}>
+          <h1 style={{fontSize: '28px', color: '#0ea5e9', marginBottom: '8px'}}>
+            🔧 MULTIHACK PANEL
+          </h1>
+          <p style={{color: '#94a3b8', fontSize: '14px'}}>Sign in to your account</p>
+        </div>
+        
         {error && <div className="error-message">{error}</div>}
+        
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username</label>
@@ -35,6 +42,7 @@ function Login({ onLogin }) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
               required
             />
           </div>
@@ -44,11 +52,13 @@ function Login({ onLogin }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
             />
           </div>
           <button type="submit" className="btn-primary">Login</button>
         </form>
+        
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
