@@ -12,6 +12,7 @@ function UserDashboard({ user, token, onLogout }) {
   const [products, setProducts] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [walletHistory, setWalletHistory] = useState({ moneyAdded: 0, moneyUsed: 0, netBalance: 0 });
@@ -68,15 +69,15 @@ function UserDashboard({ user, token, onLogout }) {
   };
 
   const buyProduct = async () => {
-    if (!selectedProduct) {
-      alert('Please select a product');
+    if (!selectedProduct || !selectedVariant) {
+      alert('Please select a product and variant');
       return;
     }
 
-    if (!confirm(`Purchase ${selectedProduct.name} for ₹${selectedProduct.price}?`)) return;
+    if (!confirm(`Purchase ${selectedProduct.name} (${selectedVariant.duration_value} ${selectedVariant.duration_unit}) for ₹${selectedVariant.price}?`)) return;
 
     try {
-      const response = await axios.post(`${API_URL}/purchase/${selectedProduct.id}`, {}, {
+      const response = await axios.post(`${API_URL}/purchase/${selectedVariant.id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert(`Purchase successful! Your key: ${response.data.key}`);
@@ -85,6 +86,7 @@ function UserDashboard({ user, token, onLogout }) {
       loadProducts();
       loadWalletHistory();
       setSelectedProduct(null);
+      setSelectedVariant(null);
     } catch (error) {
       alert(error.response?.data?.error || 'Purchase failed');
     }
@@ -223,7 +225,7 @@ function UserDashboard({ user, token, onLogout }) {
                       <div style={{marginBottom: '12px'}}>
                         <div style={{fontSize: '12px', color: '#94a3b8'}}>somysam29@gmail.com</div>
                         <div style={{fontSize: '14px', color: '#cbd5e1', marginTop: '4px'}}>
-                          {purchase.product_name} ({purchase.duration})
+                          {purchase.product_name} ({purchase.duration_value} {purchase.duration_unit})
                         </div>
                       </div>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px'}}>
@@ -265,7 +267,7 @@ function UserDashboard({ user, token, onLogout }) {
                       <div
                         key={product.id}
                         className={`product-item ${selectedProduct?.id === product.id ? 'selected' : ''}`}
-                        onClick={() => { setSelectedProduct(product); setSearchQuery(product.name); }}
+                        onClick={() => { setSelectedProduct(product); setSearchQuery(product.name); setSelectedVariant(null); }}
                       >
                         {product.name}
                       </div>
@@ -280,33 +282,51 @@ function UserDashboard({ user, token, onLogout }) {
               {selectedProduct && (
                 <>
                   <div className="form-group">
-                    <label>Duration</label>
-                    <select className="form-group input" disabled style={{opacity: 0.7}}>
-                      <option>{selectedProduct.duration}</option>
-                    </select>
+                    <label>Select Duration & Price</label>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px'}}>
+                      {selectedProduct.variants && selectedProduct.variants.map(variant => (
+                        <div
+                          key={variant.id}
+                          onClick={() => setSelectedVariant(variant)}
+                          style={{
+                            padding: '14px 16px',
+                            background: selectedVariant?.id === variant.id ? '#0ea5e9' : '#1e293b',
+                            border: `2px solid ${selectedVariant?.id === variant.id ? '#0ea5e9' : '#334155'}`,
+                            borderRadius: '8px',
+                            cursor: variant.available_keys > 0 ? 'pointer' : 'not-allowed',
+                            opacity: variant.available_keys > 0 ? 1 : 0.5,
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <div>
+                            <div style={{fontSize: '16px', fontWeight: '500', color: selectedVariant?.id === variant.id ? '#fff' : '#e2e8f0'}}>
+                              {variant.duration_value} {variant.duration_unit}
+                            </div>
+                            <div style={{fontSize: '12px', color: selectedVariant?.id === variant.id ? '#f0f9ff' : '#94a3b8', marginTop: '2px'}}>
+                              {variant.available_keys} keys available
+                            </div>
+                          </div>
+                          <div style={{fontSize: '20px', fontWeight: '600', color: selectedVariant?.id === variant.id ? '#fff' : '#0ea5e9'}}>
+                            ₹{variant.price}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Quantity</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value))}
-                    />
-                    <small style={{color: '#94a3b8', display: 'block', marginTop: '8px'}}>
-                      Enter the number of license keys you want to generate (max 100)
-                    </small>
-                  </div>
-
-                  <div style={{marginTop: '24px', display: 'flex', gap: '12px'}}>
-                    <button className="btn btn-blue" onClick={buyProduct} style={{flex: 1}}>
-                      Buy Keys
-                    </button>
-                    <button className="btn btn-cancel" onClick={() => { setSelectedProduct(null); setSearchQuery(''); }} style={{flex: 1}}>
-                      Cancel
-                    </button>
-                  </div>
+                  {selectedVariant && (
+                    <div style={{marginTop: '24px', display: 'flex', gap: '12px'}}>
+                      <button className="btn btn-blue" onClick={buyProduct} style={{flex: 1}}>
+                        Buy Key for ₹{selectedVariant.price}
+                      </button>
+                      <button className="btn btn-cancel" onClick={() => { setSelectedProduct(null); setSelectedVariant(null); setSearchQuery(''); }} style={{flex: 1}}>
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -334,7 +354,7 @@ function UserDashboard({ user, token, onLogout }) {
                         <div>
                           <div className="key-product">{purchase.product_name}</div>
                           <div style={{fontSize: '12px', color: '#94a3b8', marginTop: '4px'}}>
-                            Duration: {purchase.duration}
+                            Duration: {purchase.duration_value} {purchase.duration_unit}
                           </div>
                         </div>
                         <div className="key-date">
