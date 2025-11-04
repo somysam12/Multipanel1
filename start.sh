@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd server && node server.js &
+cd server && node dev.js &
 cd client && npm run dev
