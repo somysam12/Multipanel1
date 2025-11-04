@@ -76,7 +76,21 @@ A complete web application for managing digital product sales with an admin pane
 - `GET /api/admin/referrals` - Get all referrals
 - `POST /api/admin/referrals` - Create referral code
 
-## Recent Changes
+## Recent Changes  
+- 2025-11-04: **MAJOR FIX - IP Tracking & Reset Device Added** 🔒
+  - ✅ Created Reset Device feature (`/reset-device` page)
+  - ✅ IP tracking on login (automatic device locking)
+  - ✅ 24-hour reset cooldown system
+  - ✅ Backend endpoint: POST `/api/user/reset-ip`
+  - ✅ Added link to Login page for device reset
+  - ✅ Database already has `user_devices` and `user_ip_resets` tables
+- 2025-11-04: **CRITICAL FIX - Backend APIs Complete** ✅
+  - ✅ Added missing GET `/api/admin/referral-codes` endpoint
+  - ✅ Created `client/src/api/AdminApi.js` - Centralized API helper
+  - ✅ All backend endpoints working correctly (mods, keys, referrals, users)
+  - ✅ Created `ADMIN_PANEL_FIX_GUIDE.md` for frontend fixes
+  - ❌ AdminPanel.jsx still needs updating (calls wrong endpoints)
+  - See `FIX_SUMMARY_HINDI.md` for complete status and instructions
 - 2025-11-04: **FINAL FIX - DEPLOYMENT READY** ✅ (ARCHITECT APPROVED)
   - Fixed vercel.json to use modern "rewrites" configuration
   - Proper regex pattern: `/((?!api/)(?!.*\\.).*)`

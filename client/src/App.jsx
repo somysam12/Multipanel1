@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
+import ResetDevice from './components/ResetDevice';
 import AdminPanel from './components/AdminPanel';
 import UserDashboard from './components/UserDashboard';
 import './App.css';
@@ -46,6 +47,10 @@ function App() {
         <Route 
           path="/register" 
           element={token ? <Navigate to={user?.is_admin ? '/admin' : '/dashboard'} /> : <Register />} 
+        />
+        <Route 
+          path="/reset-device" 
+          element={<ResetDevice />} 
         />
         <Route 
           path="/admin/*" 

@@ -191,6 +191,19 @@ app.post('/api/admin/license-keys', authenticateToken, requireAdmin, async (req,
   }
 });
 
+app.get('/api/admin/referral-codes', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    if (!USE_NEON) {
+      return res.json([]);
+    }
+    const referrals = await db.getAllReferralCodes();
+    res.json(referrals);
+  } catch (error) {
+    console.error('Error fetching referral codes:', error);
+    res.status(500).json({ error: 'Failed to fetch referral codes' });
+  }
+});
+
 app.post('/api/admin/referral-codes', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { code, rewardAmount, maxUses } = req.body;

@@ -74,6 +74,9 @@ function Login({ onLogin }) {
         <p className="auth-link-new">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
+        <p className="auth-link-new" style={{marginTop: '10px', fontSize: '14px'}}>
+          Device locked? <Link to="/reset-device" style={{color: '#e74c3c'}}>Reset Device</Link>
+        </p>
       </div>
     </div>
   );
