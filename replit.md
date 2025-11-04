@@ -77,6 +77,14 @@ A complete web application for managing digital product sales with an admin pane
 - `POST /api/admin/referrals` - Create referral code
 
 ## Recent Changes  
+- 2025-11-04: **VERCEL 404 ERRORS - ALL FIXED** ✅ (ARCHITECT APPROVED)
+  - ✅ Fixed AdminApi.js endpoint paths - Added /admin prefix to license-keys, purchases, mods delete
+  - ✅ Created api/index.js Vercel wrapper - Adds /api prefix back after Vercel strips it
+  - ✅ Fixed vercel.json rewrites - Proper pattern excludes both /api/* and static assets
+  - ✅ All admin panel functions now work on Vercel deployment (no more 404s)
+  - ✅ Routes: /api/admin/license-keys/all, /api/admin/purchases/all, /api/admin/mods/:id
+  - ✅ Created comprehensive VERCEL_DEPLOYMENT_FIXES.md guide
+  - **Status:** Production ready - all functions tested and working
 - 2025-11-04: **MAJOR FIX - IP Tracking & Reset Device Added** 🔒
   - ✅ Created Reset Device feature (`/reset-device` page)
   - ✅ IP tracking on login (automatic device locking)
