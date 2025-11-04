@@ -1,27 +1,31 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { DashboardIcon, ShoppingCartIcon, KeyIcon, WalletIcon, UserIcon, MenuIcon, CloseIcon, CopyIcon, FilterIcon, WrenchIcon, ChevronDownIcon, LockIcon, LogoutIcon, HistoryIcon } from './Icons';
+import { DashboardIcon, ShoppingCartIcon, KeyIcon, WalletIcon, UserIcon, MenuIcon, CloseIcon, CopyIcon, FilterIcon, WrenchIcon, ChevronDownIcon, LockIcon, LogoutIcon, HistoryIcon, DownloadIcon } from './Icons';
 
 const API_URL = '/api';
 
 function UserDashboard({ user, token, onLogout }) {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [balance, setBalance] = useState(user.balance);
   const [products, setProducts] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [quantity, setQuantity] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [walletHistory, setWalletHistory] = useState({ moneyAdded: 0, moneyUsed: 0, netBalance: 0 });
+  const [addBalanceAmount, setAddBalanceAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [transactions, setTransactions] = useState([]);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     loadProfile();
     loadProducts();
     loadPurchases();
-    loadWalletHistory();
+    loadTransactions();
   }, []);
 
   const loadProfile = async () => {
@@ -57,14 +61,14 @@ function UserDashboard({ user, token, onLogout }) {
     }
   };
 
-  const loadWalletHistory = async () => {
+  const loadTransactions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/wallet-history`, {
+      const response = await axios.get(`${API_URL}/user/purchases`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWalletHistory(response.data);
+      setTransactions(response.data);
     } catch (error) {
-      console.error('Failed to load wallet history:', error);
+      console.error('Failed to load transactions:', error);
     }
   };
 
@@ -84,7 +88,7 @@ function UserDashboard({ user, token, onLogout }) {
       setBalance(response.data.newBalance);
       loadPurchases();
       loadProducts();
-      loadWalletHistory();
+      loadTransactions();
       setSelectedProduct(null);
       setSelectedVariant(null);
     } catch (error) {
@@ -97,366 +101,566 @@ function UserDashboard({ user, token, onLogout }) {
     alert('Copied to clipboard!');
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleAddBalance = () => {
+    if (!addBalanceAmount || !paymentMethod) {
+      alert('Please enter amount and select payment method');
+      return;
+    }
+    alert('Payment integration coming soon!');
+  };
+
+  const handleChangePassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('Please fill all password fields');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match');
+      return;
+    }
+    alert('Change password feature coming soon!');
+  };
 
   return (
-    <div className="user-panel">
-      <div className="panel-header">
-        <div className="header-left">
-          <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
-            <MenuIcon size={24} />
-          </button>
-          <div className="panel-logo">
-            <span className="logo-icon"><WrenchIcon size={24} /></span>
-            <h1 className="panel-title">MULTIHACK PANEL</h1>
-          </div>
+    <div className="user-panel-new">
+      <div className={`sidebar-left ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="sidebar-header-new">
+          <UserIcon size={32} />
+          <h2 className="sidebar-title">User Panel</h2>
         </div>
-        <div className="user-dropdown">
-          <button className="user-menu-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}>
-            <UserIcon size={20} /> {user.username.toUpperCase()} <ChevronDownIcon size={16} />
-          </button>
-          {dropdownOpen && (
-            <>
-              <div className="overlay" onClick={() => setDropdownOpen(false)}></div>
-              <div className="dropdown-menu">
-                <div className="dropdown-header">
-                  <div className="dropdown-user">{user.username.toUpperCase()}</div>
-                  <div className="dropdown-role">Reseller</div>
-                </div>
-                <div className="dropdown-balance">
-                  <WalletIcon size={20} />
-                  <div>
-                    <div style={{fontSize: '12px', opacity: 0.8}}>Wallet Balance</div>
-                    <div className="balance-amount">₹{balance.toFixed(2)}</div>
-                  </div>
-                </div>
-                <div className="dropdown-section">
-                  <div className="section-title">Wallet</div>
-                  <div className="dropdown-item" onClick={() => { setCurrentPage('wallet'); setDropdownOpen(false); }}>
-                    <HistoryIcon size={16} /> Wallet History
-                  </div>
-                </div>
-                <div className="dropdown-section">
-                  <div className="section-title">Account</div>
-                  <div className="dropdown-item" onClick={() => alert('Change password feature coming soon!')}>
-                    <LockIcon size={16} /> Change Password
-                  </div>
-                  <div className="dropdown-item" onClick={onLogout}>
-                    <LogoutIcon size={16} /> Logout
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+        <div className="sidebar-nav-new">
+          <div 
+            className={`nav-item-new ${currentPage === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('dashboard')}
+          >
+            <DashboardIcon size={20} />
+            <span>Dashboard</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'manage-key' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('manage-key')}
+          >
+            <KeyIcon size={20} />
+            <span>Manage Key</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'generate' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('generate')}
+          >
+            <ShoppingCartIcon size={20} />
+            <span>Generate</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'balance' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('balance')}
+          >
+            <WalletIcon size={20} />
+            <span>Balance</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'transaction' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('transaction')}
+          >
+            <HistoryIcon size={20} />
+            <span>Transaction</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'applications' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('applications')}
+          >
+            <DownloadIcon size={20} />
+            <span>Applications</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'settings' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('settings')}
+          >
+            <WrenchIcon size={20} />
+            <span>Settings</span>
+          </div>
+          <div 
+            className="nav-item-new"
+            onClick={onLogout}
+          >
+            <LogoutIcon size={20} />
+            <span>Logout</span>
+          </div>
         </div>
       </div>
 
-      {sidebarOpen && (
-        <>
-          <div className="overlay" onClick={() => setSidebarOpen(false)}></div>
-          <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-            <div className="sidebar-header">
-              <h2 className="panel-title">Menu</h2>
-              <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
-                <CloseIcon size={24} />
-              </button>
-            </div>
-            <div className="sidebar-nav">
-              <div 
-                className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
-                onClick={() => { setCurrentPage('dashboard'); setSidebarOpen(false); }}
-              >
-                <span className="nav-icon"><DashboardIcon size={20} /></span>
-                Dashboard
-              </div>
-              <div 
-                className={`nav-item ${currentPage === 'buy' ? 'active' : ''}`}
-                onClick={() => { setCurrentPage('buy'); setSidebarOpen(false); }}
-              >
-                <span className="nav-icon"><ShoppingCartIcon size={20} /></span>
-                Buy Key
-              </div>
-              <div 
-                className={`nav-item ${currentPage === 'keys' ? 'active' : ''}`}
-                onClick={() => { setCurrentPage('keys'); setSidebarOpen(false); }}
-              >
-                <span className="nav-icon"><KeyIcon size={20} /></span>
-                My Keys
-              </div>
-              <div 
-                className={`nav-item ${currentPage === 'wallet' ? 'active' : ''}`}
-                onClick={() => { setCurrentPage('wallet'); setSidebarOpen(false); }}
-              >
-                <span className="nav-icon"><WalletIcon size={20} /></span>
-                Wallet History
-              </div>
-            </div>
+      <div className="main-content-new">
+        <div className="top-header-new">
+          <div className="header-welcome">
+            Welcome, <span className="username-badge">{user.username}</span>
           </div>
-        </>
-      )}
+        </div>
 
-      <div className="panel-content">
-        {currentPage === 'dashboard' && (
-          <div>
-            <h2 className="welcome-message">Welcome,<br/>{user.username.toUpperCase()}</h2>
-            
-            <div className="stats-grid">
-              <div className="card card-primary">
-                <div className="card-title">Current Balance</div>
-                <div className="card-value">₹{balance.toFixed(2)}</div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="card-title">My Keys</div>
-              <div className="card-value" style={{fontSize: '48px'}}>{purchases.length}</div>
-            </div>
-
-            <div className="card">
-              <h3 style={{marginBottom: '20px', fontSize: '18px'}}>Recent Keys</h3>
-              {purchases.length === 0 ? (
-                <p style={{color: '#94a3b8', textAlign: 'center', padding: '40px'}}>No keys purchased yet</p>
-              ) : (
-                <div className="keys-list">
-                  {purchases.slice(0, 3).map(purchase => (
-                    <div key={purchase.id} className="key-card">
-                      <div style={{marginBottom: '12px'}}>
-                        <div style={{fontSize: '12px', color: '#94a3b8'}}>somysam29@gmail.com</div>
-                        <div style={{fontSize: '14px', color: '#cbd5e1', marginTop: '4px'}}>
-                          {purchase.product_name} ({purchase.duration_value} {purchase.duration_unit})
-                        </div>
-                      </div>
-                      <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px'}}>
-                        <span style={{color: '#94a3b8'}}>
-                          {new Date(purchase.purchased_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'buy' && (
-          <div>
-            <h2 className="page-title">Buy Keys</h2>
-            
-            <div className="card card-primary" style={{marginBottom: '24px'}}>
-              <div className="card-title">Your Wallet Balance</div>
-              <div className="card-value">₹{balance.toFixed(2)}</div>
-            </div>
-
-            <div className="card">
-              <div className="form-group">
-                <label>Product</label>
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search for a product"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{marginBottom: '8px'}}
-                />
-                {searchQuery && (
-                  <div className="product-list">
-                    {filteredProducts.map(product => (
-                      <div
-                        key={product.id}
-                        className={`product-item ${selectedProduct?.id === product.id ? 'selected' : ''}`}
-                        onClick={() => { setSelectedProduct(product); setSearchQuery(product.name); setSelectedVariant(null); }}
-                      >
-                        {product.name}
-                      </div>
-                    ))}
-                    {filteredProducts.length === 0 && (
-                      <div className="product-item" style={{color: '#94a3b8'}}>No products found</div>
-                    )}
+        <div className="content-area-new">
+          {currentPage === 'dashboard' && (
+            <div>
+              <h2 className="page-heading">Dashboard Overview</h2>
+              
+              <div className="dashboard-cards">
+                <div className="dash-card purple">
+                  <div className="dash-icon">
+                    <WrenchIcon size={32} />
                   </div>
-                )}
+                  <div className="dash-value">{products.length}</div>
+                  <div className="dash-label">Total Mods</div>
+                </div>
+                
+                <div className="dash-card green">
+                  <div className="dash-icon">
+                    <KeyIcon size={32} />
+                  </div>
+                  <div className="dash-value">{purchases.length}</div>
+                  <div className="dash-label">License Keys</div>
+                </div>
+                
+                <div className="dash-card blue">
+                  <div className="dash-icon">
+                    <UserIcon size={32} />
+                  </div>
+                  <div className="dash-value">1</div>
+                  <div className="dash-label">Total Users</div>
+                </div>
+                
+                <div className="dash-card orange">
+                  <div className="dash-icon">
+                    <ShoppingCartIcon size={32} />
+                  </div>
+                  <div className="dash-value">{purchases.length}</div>
+                  <div className="dash-label">Sold Licenses</div>
+                </div>
               </div>
 
-              {selectedProduct && (
-                <>
-                  <div className="form-group">
-                    <label>Select Duration & Price</label>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px'}}>
-                      {selectedProduct.variants && selectedProduct.variants.map(variant => (
+              <div className="dashboard-sections">
+                <div className="section-half">
+                  <div className="section-card">
+                    <div className="section-header-purple">
+                      <WrenchIcon size={20} />
+                      <span>Recent Mods</span>
+                    </div>
+                    <div className="data-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Upload Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {products.slice(0, 5).map(product => (
+                            <tr key={product.id}>
+                              <td>{product.name}</td>
+                              <td>{new Date().toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                          {products.length === 0 && (
+                            <tr><td colSpan="2" style={{textAlign: 'center', color: '#94a3b8'}}>No mods available</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="section-half">
+                  <div className="section-card">
+                    <div className="section-header-blue">
+                      <UserIcon size={20} />
+                      <span>Recent Users</span>
+                    </div>
+                    <div className="data-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Username</th>
+                            <th>Join Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>{user.username}</td>
+                            <td>{new Date().toLocaleDateString()}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'manage-key' && (
+            <div>
+              <div className="page-header-bar">
+                <h2 className="page-heading-inline">
+                  <KeyIcon size={24} />
+                  Your License Keys
+                </h2>
+              </div>
+              
+              <div className="white-card">
+                <div className="data-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Mod Name</th>
+                        <th>License Key</th>
+                        <th>Duration</th>
+                        <th>Purchase Date</th>
+                        <th>Expiry Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchases.map(purchase => {
+                        const expiryDate = new Date(purchase.purchased_at);
+                        expiryDate.setDate(expiryDate.getDate() + (purchase.duration_value * (purchase.duration_unit === 'Days' ? 1 : 30)));
+                        
+                        return (
+                          <tr key={purchase.id}>
+                            <td>{purchase.product_name}</td>
+                            <td>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <span>{purchase.key_value}</span>
+                                <button 
+                                  className="icon-btn-small"
+                                  onClick={() => copyToClipboard(purchase.key_value)}
+                                  title="Copy"
+                                >
+                                  <CopyIcon size={14} />
+                                </button>
+                              </div>
+                            </td>
+                            <td>{purchase.duration_value} {purchase.duration_unit}</td>
+                            <td>{new Date(purchase.purchased_at).toLocaleDateString()}</td>
+                            <td>{expiryDate.toLocaleDateString()}</td>
+                            <td>₹{purchase.amount}</td>
+                            <td>
+                              <span className={`status-badge ${expiryDate > new Date() ? 'active' : 'expired'}`}>
+                                {expiryDate > new Date() ? 'Active' : 'Expired'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {purchases.length === 0 && (
+                        <tr><td colSpan="7" style={{textAlign: 'center', color: '#94a3b8', padding: '40px'}}>No license keys yet</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'generate' && (
+            <div>
+              <div className="page-header-bar">
+                <h2 className="page-heading-inline">
+                  <ShoppingCartIcon size={24} />
+                  Purchase License Key
+                </h2>
+              </div>
+              
+              <div className="white-card">
+                <div className="form-section">
+                  <label className="form-label">Select Mod</label>
+                  <select 
+                    className="form-select"
+                    value={selectedProduct?.id || ''}
+                    onChange={(e) => {
+                      const product = products.find(p => p.id === parseInt(e.target.value));
+                      setSelectedProduct(product);
+                      setSelectedVariant(null);
+                    }}
+                  >
+                    <option value="">-- Select Mod --</option>
+                    {products.map(product => (
+                      <option key={product.id} value={product.id}>{product.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedProduct && selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                  <div className="form-section">
+                    <label className="form-label">Select Duration & Price</label>
+                    <div className="duration-options">
+                      {selectedProduct.variants.map(variant => (
                         <div
                           key={variant.id}
-                          onClick={() => setSelectedVariant(variant)}
-                          style={{
-                            padding: '14px 16px',
-                            background: selectedVariant?.id === variant.id ? '#0ea5e9' : '#1e293b',
-                            border: `2px solid ${selectedVariant?.id === variant.id ? '#0ea5e9' : '#334155'}`,
-                            borderRadius: '8px',
-                            cursor: variant.available_keys > 0 ? 'pointer' : 'not-allowed',
-                            opacity: variant.available_keys > 0 ? 1 : 0.5,
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
+                          className={`duration-card ${selectedVariant?.id === variant.id ? 'selected' : ''} ${variant.available_keys === 0 ? 'disabled' : ''}`}
+                          onClick={() => variant.available_keys > 0 && setSelectedVariant(variant)}
                         >
-                          <div>
-                            <div style={{fontSize: '16px', fontWeight: '500', color: selectedVariant?.id === variant.id ? '#fff' : '#e2e8f0'}}>
-                              {variant.duration_value} {variant.duration_unit}
-                            </div>
-                            <div style={{fontSize: '12px', color: selectedVariant?.id === variant.id ? '#f0f9ff' : '#94a3b8', marginTop: '2px'}}>
-                              {variant.available_keys} keys available
-                            </div>
+                          <div className="duration-info">
+                            <div className="duration-value">{variant.duration_value} {variant.duration_unit}</div>
+                            <div className="duration-stock">{variant.available_keys} Available</div>
                           </div>
-                          <div style={{fontSize: '20px', fontWeight: '600', color: selectedVariant?.id === variant.id ? '#fff' : '#0ea5e9'}}>
-                            ₹{variant.price}
-                          </div>
+                          <div className="duration-price">₹{variant.price}</div>
                         </div>
                       ))}
                     </div>
                   </div>
+                )}
 
-                  {selectedVariant && (
-                    <div style={{marginTop: '24px', display: 'flex', gap: '12px'}}>
-                      <button className="btn btn-blue" onClick={buyProduct} style={{flex: 1}}>
-                        Buy Key for ₹{selectedVariant.price}
+                {selectedVariant && (
+                  <div className="form-actions">
+                    <button className="btn-primary-new" onClick={buyProduct}>
+                      Purchase for ₹{selectedVariant.price}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'balance' && (
+            <div>
+              <div className="balance-display">
+                <WalletIcon size={40} />
+                <h2 className="balance-heading">Your Current Balance</h2>
+                <div className="balance-amount-large">₹{balance.toFixed(2)}</div>
+              </div>
+
+              <div className="white-card">
+                <div className="page-header-bar-sm">
+                  <h3 className="section-heading">
+                    <WalletIcon size={20} />
+                    Add Balance
+                  </h3>
+                </div>
+
+                <div className="form-section">
+                  <label className="form-label">Amount (INR)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Enter amount"
+                    value={addBalanceAmount}
+                    onChange={(e) => setAddBalanceAmount(e.target.value)}
+                  />
+                  <small className="form-hint">Minimum amount is ₹1</small>
+                </div>
+
+                <div className="form-section">
+                  <label className="form-label">Payment Method</label>
+                  <select 
+                    className="form-select"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="">-- Select Payment Method --</option>
+                    <option value="upi">UPI</option>
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="netbanking">Net Banking</option>
+                  </select>
+                </div>
+
+                <div className="form-actions">
+                  <button className="btn-primary-new" onClick={handleAddBalance}>
+                    Proceed to Payment
+                  </button>
+                </div>
+              </div>
+
+              <div className="white-card" style={{marginTop: '24px'}}>
+                <div className="page-header-bar-sm">
+                  <h3 className="section-heading">
+                    <HistoryIcon size={20} />
+                    Recent Transactions
+                  </h3>
+                  <button className="btn-view-all">View All</button>
+                </div>
+                <div className="empty-state">No transactions found</div>
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'transaction' && (
+            <div>
+              <div className="page-header-bar">
+                <h2 className="page-heading-inline">
+                  <HistoryIcon size={24} />
+                  Transaction History
+                </h2>
+                <button className="btn-back" onClick={() => setCurrentPage('balance')}>
+                  ← Back to Balance
+                </button>
+              </div>
+              
+              <div className="white-card">
+                <div className="data-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Reference</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map(transaction => (
+                        <tr key={transaction.id}>
+                          <td>{new Date(transaction.purchased_at).toLocaleString()}</td>
+                          <td className="amount-debit">-₹{transaction.amount}</td>
+                          <td><span className="badge-purchase">Purchase</span></td>
+                          <td>License purchase #{transaction.id}</td>
+                          <td><span className="status-badge completed">Completed</span></td>
+                        </tr>
+                      ))}
+                      {transactions.length === 0 && (
+                        <tr><td colSpan="5" style={{textAlign: 'center', color: '#94a3b8', padding: '40px'}}>No transactions yet</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'applications' && (
+            <div>
+              <h2 className="page-heading">Mod APK List - Mod APK Management</h2>
+              
+              <div className="apps-grid">
+                {products.map(product => (
+                  <div key={product.id} className="app-card">
+                    <h3 className="app-name">{product.name}</h3>
+                    <p className="app-desc">Check By Yourself</p>
+                    <button className="btn-download">
+                      <DownloadIcon size={16} />
+                      Download APK
+                    </button>
+                  </div>
+                ))}
+                {products.length === 0 && (
+                  <div className="empty-state-full">No applications available</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'settings' && (
+            <div>
+              <h2 className="page-heading">Account Settings</h2>
+              
+              <div className="settings-row">
+                <div className="settings-col">
+                  <div className="white-card">
+                    <div className="page-header-bar-sm">
+                      <h3 className="section-heading">
+                        <UserIcon size={20} />
+                        Account Information
+                      </h3>
+                    </div>
+                    
+                    <div className="form-section">
+                      <label className="form-label">Username</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={user.username}
+                        readOnly
+                      />
+                    </div>
+
+                    <div className="form-section">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        className="form-input"
+                        value={user.email || 'somysam29@gmail.com'}
+                        readOnly
+                      />
+                    </div>
+
+                    <div className="form-section">
+                      <label className="form-label">Role</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={user.is_admin ? 'Admin' : 'User'}
+                        readOnly
+                      />
+                    </div>
+
+                    <div className="form-section">
+                      <label className="form-label">Join Date</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={new Date().toLocaleDateString()}
+                        readOnly
+                      />
+                    </div>
+
+                    <div className="form-actions">
+                      <button className="btn-primary-new">
+                        Update Details
                       </button>
-                      <button className="btn btn-cancel" onClick={() => { setSelectedProduct(null); setSelectedVariant(null); setSearchQuery(''); }} style={{flex: 1}}>
-                        Cancel
+                    </div>
+                  </div>
+                </div>
+
+                <div className="settings-col">
+                  <div className="white-card">
+                    <div className="page-header-bar-sm">
+                      <h3 className="section-heading">
+                        <LockIcon size={20} />
+                        Change Password
+                      </h3>
+                    </div>
+                    
+                    <div className="form-section">
+                      <label className="form-label">Current Password</label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder="Enter current password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-section">
+                      <label className="form-label">New Password</label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-section">
+                      <label className="form-label">Confirm New Password</label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-actions">
+                      <button className="btn-primary-new" onClick={handleChangePassword}>
+                        Change Password
                       </button>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'keys' && (
-          <div>
-            <h2 className="page-title">My Keys</h2>
-            
-            <div className="card">
-              <div className="card-title">My Keys</div>
-              <div className="card-value" style={{fontSize: '48px', marginBottom: '24px'}}>{purchases.length}</div>
-            </div>
-
-            <div className="card">
-              <h3 style={{marginBottom: '20px', fontSize: '18px'}}>Recent Keys</h3>
-              {purchases.length === 0 ? (
-                <p style={{color: '#94a3b8', textAlign: 'center', padding: '40px'}}>No keys purchased yet</p>
-              ) : (
-                <div className="keys-list">
-                  {purchases.map(purchase => (
-                    <div key={purchase.id} className="key-card">
-                      <div className="key-header">
-                        <div>
-                          <div className="key-product">{purchase.product_name}</div>
-                          <div style={{fontSize: '12px', color: '#94a3b8', marginTop: '4px'}}>
-                            Duration: {purchase.duration_value} {purchase.duration_unit}
-                          </div>
-                        </div>
-                        <div className="key-date">
-                          {new Date(purchase.purchased_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="key-detail">
-                        <span className="key-label">Customer</span>
-                        <span className="key-value">somysam29@gmail.com</span>
-                      </div>
-                      
-                      <div className="key-detail">
-                        <span className="key-label">Key</span>
-                        <div className="key-code">
-                          <span>{purchase.key_value}</span>
-                          <button className="copy-btn" onClick={() => copyToClipboard(purchase.key_value)}>
-                            <CopyIcon size={14} />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="key-detail">
-                        <span className="key-label">Purchased</span>
-                        <span className="key-value">
-                          {new Date(purchase.purchased_at).toLocaleDateString('en-US', { 
-                            month: 'short', day: 'numeric', year: 'numeric' 
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'wallet' && (
-          <div>
-            <h2 className="page-title">Wallet History</h2>
-            
-            <button className="btn btn-blue" style={{marginBottom: '24px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-              <FilterIcon size={16} /> Filter Transactions
-            </button>
-
-            <div className="stats-grid">
-              <div className="card card-success">
-                <div className="card-title">Money Added</div>
-                <div className="card-value">₹{walletHistory.moneyAdded.toFixed(2)}</div>
-              </div>
-
-              <div className="card card-danger">
-                <div className="card-title">Money Used</div>
-                <div className="card-value">
-                  ₹{walletHistory.moneyUsed.toFixed(2)}
+                  </div>
                 </div>
               </div>
-
-              <div className="card card-primary">
-                <div className="card-title">Net Balance</div>
-                <div className="card-value">₹{walletHistory.netBalance.toFixed(2)}</div>
-              </div>
             </div>
-
-            <div className="card">
-              <h3 style={{marginBottom: '20px', fontSize: '18px'}}>Recent Transactions</h3>
-              {purchases.length === 0 ? (
-                <p style={{color: '#94a3b8', textAlign: 'center', padding: '40px'}}>No transactions yet</p>
-              ) : (
-                <div>
-                  {purchases.map(purchase => (
-                    <div key={purchase.id} className="transaction-card">
-                      <div className="transaction-header">
-                        <div className="transaction-date">
-                          {new Date(purchase.purchased_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                        <span className="transaction-type type-debit">DEBIT</span>
-                      </div>
-                      <div style={{fontSize: '14px', color: '#cbd5e1'}}>
-                        Purchased: {purchase.product_name}
-                      </div>
-                      <div style={{fontSize: '18px', fontWeight: '700', marginTop: '8px', color: '#fca5a5'}}>
-                        -₹{parseFloat(purchase.amount).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div style={{textAlign: 'center', padding: '40px 20px', color: '#64748b', fontSize: '12px'}}>
-        © 2025 MULTIHACK PANEL. All rights reserved.
+          )}
+        </div>
       </div>
     </div>
   );
