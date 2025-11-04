@@ -24,7 +24,7 @@ const AdminApi = {
 
   async deleteMod(token, modId) {
     const response = await axios.delete(
-      `${API_URL}/mods/${modId}`,
+      `${API_URL}/admin/mods/${modId}`,
       getAuthHeader(token)
     );
     return response.data;
@@ -42,7 +42,7 @@ const AdminApi = {
 
   async getAllLicenseKeys(token) {
     const response = await axios.get(
-      `${API_URL}/license-keys/all`,
+      `${API_URL}/admin/license-keys/all`,
       getAuthHeader(token)
     );
     return response.data.keys || [];
@@ -50,7 +50,7 @@ const AdminApi = {
 
   async getLicenseKeysByMod(token, modId) {
     const response = await axios.get(
-      `${API_URL}/license-keys/mod/${modId}`,
+      `${API_URL}/admin/license-keys/mod/${modId}`,
       getAuthHeader(token)
     );
     return response.data.keys || [];
@@ -58,7 +58,7 @@ const AdminApi = {
 
   async deleteLicenseKey(token, keyId) {
     const response = await axios.delete(
-      `${API_URL}/license-keys/${keyId}`,
+      `${API_URL}/admin/license-keys/${keyId}`,
       getAuthHeader(token)
     );
     return response.data;
@@ -66,7 +66,7 @@ const AdminApi = {
 
   async deleteAllLicenseKeys(token) {
     const response = await axios.delete(
-      `${API_URL}/license-keys/delete-all`,
+      `${API_URL}/admin/license-keys/delete-all`,
       getAuthHeader(token)
     );
     return response.data;
@@ -74,7 +74,7 @@ const AdminApi = {
 
   async deleteLicenseKeysByMod(token, modId) {
     const response = await axios.delete(
-      `${API_URL}/license-keys/delete-by-mod/${modId}`,
+      `${API_URL}/admin/license-keys/delete-by-mod/${modId}`,
       getAuthHeader(token)
     );
     return response.data;
@@ -123,7 +123,7 @@ const AdminApi = {
 
   async getPurchases(token) {
     const response = await axios.get(
-      `${API_URL}/purchases/all`,
+      `${API_URL}/admin/purchases/all`,
       getAuthHeader(token)
     );
     return response.data.purchases || [];
