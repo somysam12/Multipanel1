@@ -4,6 +4,7 @@ import { DashboardIcon, UsersIcon, PackageIcon, GiftIcon, MenuIcon, UserIcon, Lo
 import DeleteMods from './DeleteMods';
 import DeleteKeys from './DeleteKeys';
 import PurchaseTracking from './PurchaseTracking';
+import AdminApi from '../api/AdminApi';
 
 const API_URL = '/api';
 
@@ -195,25 +196,25 @@ function DashboardPage({ token }) {
 
   const loadStats = async () => {
     try {
-      const [productsRes, usersRes, purchasesRes] = await Promise.all([
-        axios.get(`${API_URL}/admin/products`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/admin/purchases`, { headers: { Authorization: `Bearer ${token}` } })
+      const [products, users, purchases] = await Promise.all([
+        AdminApi.getMods(token),
+        AdminApi.getUsers(token),
+        AdminApi.getPurchases(token)
       ]);
       
-      const totalKeys = productsRes.data.reduce((sum, p) => {
+      const totalKeys = products.reduce((sum, p) => {
         return sum + (p.variants?.reduce((vSum, v) => vSum + v.total_keys, 0) || 0);
       }, 0);
 
       setStats({
-        mods: productsRes.data.length,
+        mods: products.length,
         keys: totalKeys,
-        users: usersRes.data.length,
-        sold: purchasesRes.data.length
+        users: users.length,
+        sold: purchases.length
       });
       
-      setRecentMods(productsRes.data.slice(0, 5));
-      setRecentUsers(usersRes.data.slice(0, 5));
+      setRecentMods(products.slice(0, 5));
+      setRecentUsers(users.slice(0, 5));
     } catch (error) {
       console.error('Failed to load stats:', error);
     }
@@ -333,10 +334,13 @@ function AddModPage({ token }) {
     }
     
     try {
-      await axios.post(`${API_URL}/admin/products`, 
-        { name: modName, description },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await AdminApi.createMod(token, { 
+        name: modName, 
+        description,
+        version: '1.0.0',
+        apkUrl: '',
+        iconUrl: ''
+      });
       alert('Mod added successfully!');
       setModName('');
       setDescription('');
@@ -403,10 +407,8 @@ function ManageModsPage({ token }) {
 
   const loadMods = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMods(response.data);
+      const mods = await AdminApi.getMods(token);
+      setMods(mods);
     } catch (error) {
       console.error('Failed to load mods:', error);
     }
@@ -416,9 +418,7 @@ function ManageModsPage({ token }) {
     if (!confirm('Are you sure you want to delete this mod?')) return;
     
     try {
-      await axios.delete(`${API_URL}/admin/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await AdminApi.deleteMod(token, id);
       alert('Mod deleted successfully!');
       loadMods();
     } catch (error) {
@@ -498,10 +498,8 @@ function UploadAPKPage({ token }) {
 
   const loadMods = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMods(response.data);
+      const mods = await AdminApi.getMods(token);
+      setMods(mods);
     } catch (error) {
       console.error('Failed to load mods:', error);
     }
@@ -612,10 +610,8 @@ function APKListPage({ token }) {
 
   const loadMods = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMods(response.data);
+      const mods = await AdminApi.getMods(token);
+      setMods(mods);
     } catch (error) {
       console.error('Failed to load mods:', error);
     }
@@ -699,10 +695,8 @@ function AddLicensePage({ token }) {
 
   const loadMods = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMods(response.data);
+      const mods = await AdminApi.getMods(token);
+      setMods(mods);
     } catch (error) {
       console.error('Failed to load mods:', error);
     }
@@ -722,14 +716,12 @@ function AddLicensePage({ token }) {
     }
 
     try {
-      await axios.post(`${API_URL}/admin/variants`, {
-        product_id: parseInt(selectedMod),
-        duration_value: parseInt(duration),
-        duration_unit: durationUnit,
+      const durationDays = durationUnit === 'Days' ? parseInt(duration) : Math.ceil(parseInt(duration) / 24);
+      await AdminApi.createLicenseKeys(token, {
+        modId: parseInt(selectedMod),
+        durationDays: durationDays,
         price: parseFloat(price),
-        keys: keys
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+        count: keys.length
       });
       alert('License key(s) added successfully!');
       setLicenseKey('');
@@ -866,10 +858,8 @@ function LicenseListPage({ token }) {
 
   const loadMods = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMods(response.data);
+      const mods = await AdminApi.getMods(token);
+      setMods(mods);
     } catch (error) {
       console.error('Failed to load mods:', error);
     }
@@ -877,10 +867,8 @@ function LicenseListPage({ token }) {
 
   const loadLicenses = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/purchases`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setLicenses(response.data);
+      const purchases = await AdminApi.getPurchases(token);
+      setLicenses(purchases);
     } catch (error) {
       console.error('Failed to load licenses:', error);
     }
@@ -1000,10 +988,8 @@ function AvailableKeysPage({ token }) {
 
   const loadProducts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setProducts(response.data);
+      const mods = await AdminApi.getMods(token);
+      setProducts(mods);
     } catch (error) {
       console.error('Failed to load products:', error);
     }
@@ -1105,10 +1091,8 @@ function ManageUsersPage({ token }) {
 
   const loadUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(response.data);
+      const users = await AdminApi.getUsers(token);
+      setUsers(users);
     } catch (error) {
       console.error('Failed to load users:', error);
     }
@@ -1206,10 +1190,8 @@ function AddBalancePage({ token }) {
 
   const loadUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(response.data);
+      const users = await AdminApi.getUsers(token);
+      setUsers(users);
     } catch (error) {
       console.error('Failed to load users:', error);
     }
@@ -1222,15 +1204,13 @@ function AddBalancePage({ token }) {
     }
 
     try {
-      await axios.post(`${API_URL}/admin/users/${selectedUser}/balance`, {
-        amount: parseFloat(amount),
-        reference: reference || 'Balance addition'
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const user = users.find(u => u.id === parseInt(selectedUser));
+      const newBalance = user.balance + parseFloat(amount);
+      await AdminApi.updateUserBalance(token, selectedUser, newBalance);
       alert('Balance added successfully!');
       setAmount('');
       setReference('');
+      loadUsers();
     } catch (error) {
       alert('Failed to add balance: ' + (error.response?.data?.error || error.message));
     }
@@ -1302,10 +1282,8 @@ function TransactionPage({ token }) {
 
   const loadTransactions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/purchases`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTransactions(response.data);
+      const purchases = await AdminApi.getPurchases(token);
+      setTransactions(purchases);
     } catch (error) {
       console.error('Failed to load transactions:', error);
     }
@@ -1394,19 +1372,39 @@ function TransactionPage({ token }) {
 
 function ReferralPage({ token }) {
   const [expiryDays, setExpiryDays] = useState('30');
-  const [referrals, setReferrals] = useState([
-    { code: '1EA25928', user: 'ishashwat', created: '03 Nov 2025 11:35', expires: '18 Nov 2025 10:35', status: 'Active' },
-    { code: 'C7035A5C', user: 'ishashwat', created: '03 Nov 2025 11:26', expires: '18 Nov 2025 10:26', status: 'Active' }
-  ]);
+  const [referrals, setReferrals] = useState([]);
 
-  const generateCode = () => {
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    alert(`Generated referral code: ${code}`);
+  useEffect(() => {
+    loadReferrals();
+  }, []);
+
+  const loadReferrals = async () => {
+    try {
+      const data = await AdminApi.getReferralCodes(token);
+      setReferrals(data);
+    } catch (error) {
+      console.error('Failed to load referrals:', error);
+    }
+  };
+
+  const generateCode = async () => {
+    try {
+      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      await AdminApi.createReferralCode(token, { 
+        code, 
+        rewardAmount: 50,
+        maxUses: null
+      });
+      alert(`Generated referral code: ${code} - Saved to database!`);
+      loadReferrals();
+    } catch (error) {
+      alert('Failed to create referral code: ' + error.message);
+    }
   };
 
   const deactivateCode = (code) => {
     if (confirm(`Deactivate referral code ${code}?`)) {
-      alert('Referral code deactivated!');
+      alert('Referral code deactivation feature coming soon!');
     }
   };
 
