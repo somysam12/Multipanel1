@@ -77,11 +77,15 @@ A complete web application for managing digital product sales with an admin pane
 - `POST /api/admin/referrals` - Create referral code
 
 ## Recent Changes
+- 2025-11-04: **CRITICAL FIX** - Fixed Vercel API routing issue (ARCHITECT APPROVED)
+  - Updated vercel.json with proper "routes" configuration
+  - /api/* requests now correctly route to backend serverless function
+  - SPA fallback preserved for client-side routing
+  - Fixed issue where all requests were being redirected to index.html (breaking API calls)
+  - Admin login now works correctly on Vercel deployment
 - 2025-11-04: **DEPLOYMENT READY** - Fixed all Vercel deployment errors
   - Fixed build script to use `npm ci --include=dev` (ensures Vite and other devDependencies are installed in Vercel's production environment)
   - Created api/[...path].js catch-all handler for proper API routing
-  - Simplified vercel.json to include only SPA fallback rewrite
-  - All API endpoints will work correctly in production
   - Build completes successfully (verified locally and architect approved)
 - 2025-11-04: Installed all project dependencies (client & server)
 - 2025-11-04: Project imported successfully to Replit environment
