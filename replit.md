@@ -77,6 +77,10 @@ A complete web application for managing digital product sales with an admin pane
 - `POST /api/admin/referrals` - Create referral code
 
 ## Recent Changes
+- 2025-11-04: Fixed Vercel deployment configuration (vercel.json)
+- 2025-11-04: Added vercel-build script for proper deployment
+- 2025-11-04: Created .vercelignore and deployment documentation
+- 2025-11-04: Installed all project dependencies (client & server)
 - 2025-10-23: Initial project setup
 - 2025-10-23: Implemented complete admin panel and user dashboard
 - 2025-10-23: Added referral-based registration system
