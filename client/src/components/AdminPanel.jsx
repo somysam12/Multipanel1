@@ -867,24 +867,22 @@ function LicenseListPage({ token }) {
 
   const loadLicenses = async () => {
     try {
-      const purchases = await AdminApi.getPurchases(token);
-      setLicenses(purchases);
+      const keys = await AdminApi.getAllLicenseKeys(token);
+      setLicenses(keys);
     } catch (error) {
       console.error('Failed to load licenses:', error);
     }
   };
 
   const deleteLicense = async (id) => {
-    if (!confirm('Are you sure you want to delete this license?')) return;
+    if (!confirm('Are you sure you want to delete this license key?')) return;
     
     try {
-      await axios.delete(`${API_URL}/admin/purchases/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('License deleted successfully!');
+      await AdminApi.deleteLicenseKey(token, id);
+      alert('License key deleted successfully!');
       loadLicenses();
     } catch (error) {
-      alert('Failed to delete license');
+      alert('Failed to delete license key');
     }
   };
 
@@ -1099,17 +1097,7 @@ function ManageUsersPage({ token }) {
   };
 
   const deleteUser = async (id) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    
-    try {
-      await axios.delete(`${API_URL}/admin/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('User deleted successfully!');
-      loadUsers();
-    } catch (error) {
-      alert('Failed to delete user');
-    }
+    alert('User deletion is not supported in this version. Please contact system administrator.');
   };
 
   return (
