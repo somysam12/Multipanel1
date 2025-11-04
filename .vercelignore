@@ -7,3 +7,5 @@ node_modules
 multipanel.db
 attached_assets
 .local
+server/multipanel.db
+database/
