@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DashboardIcon, UsersIcon, PackageIcon, GiftIcon, MenuIcon, UserIcon, LogoutIcon, WalletIcon, PlusIcon, TrashIcon, EditIcon, LockIcon, WrenchIcon, KeyIcon, UploadIcon, HistoryIcon, DownloadIcon } from './Icons';
+import DeleteMods from './DeleteMods';
+import DeleteKeys from './DeleteKeys';
+import PurchaseTracking from './PurchaseTracking';
 
 const API_URL = '/api';
 
@@ -80,6 +83,27 @@ function AdminPanel({ user, onLogout }) {
             <span>Available Keys</span>
           </div>
           <div 
+            className={`nav-item-new ${currentPage === 'delete-mods' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('delete-mods')}
+          >
+            <TrashIcon size={20} />
+            <span>Delete Mod Names</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'delete-keys' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('delete-keys')}
+          >
+            <TrashIcon size={20} />
+            <span>Delete License Keys</span>
+          </div>
+          <div 
+            className={`nav-item-new ${currentPage === 'purchase-tracking' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('purchase-tracking')}
+          >
+            <HistoryIcon size={20} />
+            <span>Purchase Tracking</span>
+          </div>
+          <div 
             className={`nav-item-new ${currentPage === 'manage-users' ? 'active' : ''}`}
             onClick={() => setCurrentPage('manage-users')}
           >
@@ -146,6 +170,9 @@ function AdminPanel({ user, onLogout }) {
           {currentPage === 'add-license' && <AddLicensePage token={token} />}
           {currentPage === 'license-list' && <LicenseListPage token={token} />}
           {currentPage === 'available-keys' && <AvailableKeysPage token={token} />}
+          {currentPage === 'delete-mods' && <DeleteModsPage token={token} />}
+          {currentPage === 'delete-keys' && <DeleteKeysPage token={token} />}
+          {currentPage === 'purchase-tracking' && <PurchaseTrackingPage token={token} />}
           {currentPage === 'manage-users' && <ManageUsersPage token={token} />}
           {currentPage === 'add-balance' && <AddBalancePage token={token} />}
           {currentPage === 'transaction' && <TransactionPage token={token} />}
@@ -1055,6 +1082,18 @@ function AvailableKeysPage({ token }) {
       )}
     </div>
   );
+}
+
+function DeleteModsPage({ token }) {
+  return <DeleteMods />;
+}
+
+function DeleteKeysPage({ token }) {
+  return <DeleteKeys />;
+}
+
+function PurchaseTrackingPage({ token }) {
+  return <PurchaseTracking />;
 }
 
 function ManageUsersPage({ token }) {
