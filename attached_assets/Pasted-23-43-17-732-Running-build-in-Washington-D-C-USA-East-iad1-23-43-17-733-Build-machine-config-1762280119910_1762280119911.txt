@@ -1,0 +1,64 @@
+23:43:17.732 Running build in Washington, D.C., USA (East) – iad1
+23:43:17.733 Build machine configuration: 2 cores, 8 GB
+23:43:17.869 Cloning github.com/somysam12/Multipanel1 (Branch: main, Commit: fc2c927)
+23:43:19.705 Cloning completed: 1.836s
+23:43:19.734 Found .vercelignore
+23:43:19.752 Removed 94 ignored files defined in .vercelignore
+23:43:19.752   /.git/config
+23:43:19.752   /.git/description
+23:43:19.752   /.git/FETCH_HEAD
+23:43:19.753   /.git/HEAD
+23:43:19.753   /.git/hooks/applypatch-msg.sample
+23:43:19.753   /.git/hooks/commit-msg.sample
+23:43:19.753   /.git/hooks/fsmonitor-watchman.sample
+23:43:19.753   /.git/hooks/post-update.sample
+23:43:19.753   /.git/hooks/pre-applypatch.sample
+23:43:19.753   /.git/hooks/pre-commit.sample
+23:43:19.802 Restored build cache from previous deployment (Ct3wqNJGo4rVUjEH6E4gEUobVYnH)
+23:43:20.184 Running "vercel build"
+23:43:21.143 Vercel CLI 48.8.2
+23:43:21.816 Installing dependencies...
+23:43:24.529 
+23:43:24.530 > multipanel@1.0.0 postinstall
+23:43:24.530 > cd server && npm install
+23:43:24.530 
+23:43:25.183 
+23:43:25.183 up to date, audited 133 packages in 582ms
+23:43:25.184 
+23:43:25.184 25 packages are looking for funding
+23:43:25.184   run `npm fund` for details
+23:43:25.185 
+23:43:25.185 found 0 vulnerabilities
+23:43:25.214 
+23:43:25.215 up to date in 3s
+23:43:25.345 
+23:43:25.345 > multipanel@1.0.0 build
+23:43:25.345 > cd client && npm ci --include=dev && npm run build
+23:43:25.346 
+23:43:28.744 
+23:43:28.745 added 181 packages, and audited 182 packages in 3s
+23:43:28.748 
+23:43:28.748 38 packages are looking for funding
+23:43:28.749   run `npm fund` for details
+23:43:28.749 
+23:43:28.749 found 0 vulnerabilities
+23:43:28.859 
+23:43:28.860 > client@0.0.0 build
+23:43:28.860 > vite build
+23:43:28.860 
+23:43:29.130 [36mvite v7.1.12 [32mbuilding for production...[36m[39m
+23:43:29.184 transforming...
+23:43:32.156 [32m✓[39m 1746 modules transformed.
+23:43:32.421 rendering chunks...
+23:43:32.430 computing gzip size...
+23:43:32.445 [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.45 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+23:43:32.445 [2mdist/[22m[2massets/[22m[35mindex-DBCsQhbk.css  [39m[1m[2m 29.16 kB[22m[1m[22m[2m │ gzip:   5.81 kB[22m
+23:43:32.445 [2mdist/[22m[2massets/[22m[36mindex-CKgGvG_Z.js   [39m[1m[2m348.42 kB[22m[1m[22m[2m │ gzip: 101.32 kB[22m
+23:43:32.446 [32m✓ built in 3.29s[39m
+23:43:33.590 Build Completed in /vercel/output [12s]
+23:43:33.747 Deploying outputs...
+23:43:40.253 Deployment completed
+23:43:41.345 Creating build cache...
+23:43:47.671 Created build cache: 6.322s
+23:43:47.672 Uploading build cache [25.03 MB]
+23:43:48.149 Build cache uploaded: 480.969ms
