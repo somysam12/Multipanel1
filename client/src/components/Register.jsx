@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { WrenchIcon, UserIcon, LockIcon, GiftIcon } from './Icons';
 
 const API_URL = '/api';
 
@@ -31,56 +32,69 @@ function Register() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <div style={{textAlign: 'center', marginBottom: '30px'}}>
-          <h1 style={{fontSize: '28px', color: '#0ea5e9', marginBottom: '8px'}}>
-            🔧 MULTIHACK PANEL
-          </h1>
-          <p style={{color: '#94a3b8', fontSize: '14px'}}>Create your account</p>
+    <div className="auth-container-new">
+      <div className="auth-card-new">
+        <div className="auth-header-new">
+          <div className="auth-icon-new">
+            <WrenchIcon size={48} />
+          </div>
+          <h1 className="auth-title-new">MULTIHACK PANEL</h1>
+          <p className="auth-subtitle-new">Create your account</p>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+        {error && <div className="error-message-new">{error}</div>}
+        {success && <div className="success-message-new">{success}</div>}
         
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Username</label>
+        <form onSubmit={handleSubmit} className="auth-form-new">
+          <div className="form-section">
+            <label className="form-label">
+              <UserIcon size={16} style={{display: 'inline', marginRight: '6px'}} />
+              Username
+            </label>
             <input
               type="text"
+              className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Choose a username"
               required
             />
           </div>
-          <div className="form-group">
-            <label>Password</label>
+          <div className="form-section">
+            <label className="form-label">
+              <LockIcon size={16} style={{display: 'inline', marginRight: '6px'}} />
+              Password
+            </label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Choose a password"
               required
             />
           </div>
-          <div className="form-group">
-            <label>Referral Code (Required)</label>
+          <div className="form-section">
+            <label className="form-label">
+              <GiftIcon size={16} style={{display: 'inline', marginRight: '6px'}} />
+              Referral Code (Required)
+            </label>
             <input
               type="text"
+              className="form-input"
               value={referralCode}
               onChange={(e) => setReferralCode(e.target.value)}
               placeholder="Enter referral code"
               required
             />
-            <small style={{color: '#94a3b8', fontSize: '12px', marginTop: '8px', display: 'block'}}>
-              You need a referral code to register
-            </small>
+            <small className="form-hint">You need a referral code to register</small>
           </div>
-          <button type="submit" className="btn-primary">Register</button>
+          <button type="submit" className="btn-primary-new" style={{marginTop: '8px'}}>
+            Register
+          </button>
         </form>
         
-        <p className="auth-link">
+        <p className="auth-link-new">
           Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>

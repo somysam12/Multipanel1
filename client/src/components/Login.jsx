@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { WrenchIcon, UserIcon, LockIcon } from './Icons';
 
 const API_URL = '/api';
 
@@ -24,42 +25,53 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <div style={{textAlign: 'center', marginBottom: '30px'}}>
-          <h1 style={{fontSize: '28px', color: '#0ea5e9', marginBottom: '8px'}}>
-            🔧 MULTIHACK PANEL
-          </h1>
-          <p style={{color: '#94a3b8', fontSize: '14px'}}>Sign in to your account</p>
+    <div className="auth-container-new">
+      <div className="auth-card-new">
+        <div className="auth-header-new">
+          <div className="auth-icon-new">
+            <WrenchIcon size={48} />
+          </div>
+          <h1 className="auth-title-new">MULTIHACK PANEL</h1>
+          <p className="auth-subtitle-new">Sign in to your account</p>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message-new">{error}</div>}
         
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Username</label>
+        <form onSubmit={handleSubmit} className="auth-form-new">
+          <div className="form-section">
+            <label className="form-label">
+              <UserIcon size={16} style={{display: 'inline', marginRight: '6px'}} />
+              Username
+            </label>
             <input
               type="text"
+              className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               required
             />
           </div>
-          <div className="form-group">
-            <label>Password</label>
+          <div className="form-section">
+            <label className="form-label">
+              <LockIcon size={16} style={{display: 'inline', marginRight: '6px'}} />
+              Password
+            </label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
             />
           </div>
-          <button type="submit" className="btn-primary">Login</button>
+          <button type="submit" className="btn-primary-new" style={{marginTop: '8px'}}>
+            Login
+          </button>
         </form>
         
-        <p className="auth-link">
+        <p className="auth-link-new">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
       </div>

@@ -15,6 +15,12 @@ function AdminPanel({ user, onLogout }) {
         <div className="sidebar-header-new">
           <WrenchIcon size={32} />
           <h2 className="sidebar-title">Admin Panel</h2>
+          <button 
+            className="sidebar-close-btn"
+            onClick={() => setSidebarOpen(false)}
+          >
+            ×
+          </button>
         </div>
         <div className="sidebar-nav-new">
           <div 
@@ -120,6 +126,12 @@ function AdminPanel({ user, onLogout }) {
 
       <div className="main-content-new">
         <div className="top-header-new">
+          <button 
+            className="menu-toggle-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <MenuIcon size={24} />
+          </button>
           <div className="header-welcome">
             Welcome, <span className="username-badge">{user.username}</span>
           </div>
